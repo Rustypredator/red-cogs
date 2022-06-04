@@ -136,15 +136,6 @@ class Seen(commands.Cog):
             self._cache[message.guild.id][message.author.id] = int(time.time())
 
     @commands.Cog.listener()
-    async def on_typing(
-        self, channel: discord.abc.Messageable, user: Union[discord.User, discord.Member], when: datetime.datetime,
-    ):
-        if getattr(user, "guild", None):
-            if user.guild.id not in self._cache:
-                self._cache[user.guild.id] = {}
-            self._cache[user.guild.id][user.id] = int(time.time())
-
-    @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if getattr(after, "guild", None):
             if after.guild.id not in self._cache:
