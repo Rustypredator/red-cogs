@@ -1,0 +1,8 @@
+{
+    "author": ["aikaterna", "Rustypredator"],
+    "description": "Check when the user was last active on a server. Originally made by Paddo. Fork from aikaterna. Considers Voice as activity and allows kicking users inactive longer than x hours.",
+    "short": "Check when the user was last active on a server.",
+    "tags": ["seen", "activity"],
+    "type": "COG",
+    "end_user_data_statement": "Stores Discord IDs and timestamps for activity tracking."
+}
