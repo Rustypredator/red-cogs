@@ -166,8 +166,7 @@ class Seen(commands.Cog):
             self._cache[user.guild.id][user.id] = int(time.time())
 
     @commands.Cog.listener()
-    #async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
-    async def on_voice_state_update(self, user: Union[discord.Member, discord.User], before, after):
+    async def on_voice_state_update(self, user: Union[discord.Member, discord.User], before: discord.VoiceState, after: discord.VoiceState):
         if getattr(user, "guild", None):
             if user.guild.id not in self._cache:
                 self._cache[user.guild.id] = {}
