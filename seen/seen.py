@@ -14,9 +14,7 @@ _SCHEMA_VERSION = 2
 class Seen(commands.Cog):
     """Shows last time a user was seen in chat."""
 
-    async def red_delete_data_for_user(
-        self, *, requester: Literal["discord", "owner", "user", "user_strict"], user_id: int,
-    ):
+    async def red_delete_data_for_user(self, *, requester: Literal["discord", "owner", "user", "user_strict"], user_id: int):
         if requester in ["discord", "owner"]:
             data = await self.config.all_members()
             for guild_id, members in data.items():
@@ -129,9 +127,7 @@ class Seen(commands.Cog):
         return d, h, m
 
     @commands.Cog.listener()
-    async def on_voice_state_update(
-        self, user: discord.Member, before: discord.VoiceState, after: discord.VoiceState
-    ):
+    async def on_voice_state_update(self, user: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         if getattr(user, "guild", None):
             if user.guild.id not in self._cache:
                 self._cache[user.guild.id] = {}
@@ -145,9 +141,7 @@ class Seen(commands.Cog):
             self._cache[message.guild.id][message.author.id] = int(time.time())
 
     @commands.Cog.listener()
-    async def on_typing(
-        self, channel: discord.abc.Messageable, user: Union[discord.User, discord.Member], when: datetime.datetime,
-    ):
+    async def on_typing(self, channel: discord.abc.Messageable, user: Union[discord.User, discord.Member], when: datetime.datetime):
         if getattr(user, "guild", None):
             if user.guild.id not in self._cache:
                 self._cache[user.guild.id] = {}
