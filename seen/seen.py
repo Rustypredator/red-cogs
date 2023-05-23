@@ -76,7 +76,7 @@ class Seen(commands.Cog):
     @commands.guild_only()
     @commands.command(name="seen")
     @commands.bot_has_permissions(embed_links=True)
-    async def _seen(self, ctx, author: discord.Member):
+    async def _seen(self, ctx, *, author: discord.Member):
         """Shows last time a user was seen in chat."""
         member_seen_config = await self.config.member(author).seen()
         member_seen_cache = self._cache.get(author.guild.id, {}).get(author.id, None)
@@ -117,7 +117,7 @@ class Seen(commands.Cog):
             elif output[2] > 1:
                 ts += "{} minutes ago".format(output[2])
         em = discord.Embed(colour=discord.Color.green())
-        avatar = author.avatar_url or author.default_avatar_url
+        avatar = author.display_avatar
         em.set_author(name="{} was seen {}".format(author.display_name, ts), icon_url=avatar)
         await ctx.send(embed=em)
 
@@ -129,11 +129,29 @@ class Seen(commands.Cog):
         return d, h, m
 
     @commands.Cog.listener()
+    async def on_voice_state_update(
+        self, user: discord.Member, before: discord.VoiceState, after: discord.VoiceState
+    ):
+        if getattr(user, "guild", None):
+            if user.guild.id not in self._cache:
+                self._cache[user.guild.id] = {}
+            self._cache[user.guild.id][user.id] = int(time.time())
+    
+    @commands.Cog.listener()
     async def on_message(self, message):
         if getattr(message, "guild", None):
             if message.guild.id not in self._cache:
                 self._cache[message.guild.id] = {}
             self._cache[message.guild.id][message.author.id] = int(time.time())
+
+    @commands.Cog.listener()
+    async def on_typing(
+        self, channel: discord.abc.Messageable, user: Union[discord.User, discord.Member], when: datetime.datetime,
+    ):
+        if getattr(user, "guild", None):
+            if user.guild.id not in self._cache:
+                self._cache[user.guild.id] = {}
+            self._cache[user.guild.id][user.id] = int(time.time())
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -151,13 +169,6 @@ class Seen(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
-        if getattr(user, "guild", None):
-            if user.guild.id not in self._cache:
-                self._cache[user.guild.id] = {}
-            self._cache[user.guild.id][user.id] = int(time.time())
-
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, user: Union[discord.Member, discord.User], before: discord.VoiceState, after: discord.VoiceState):
         if getattr(user, "guild", None):
             if user.guild.id not in self._cache:
                 self._cache[user.guild.id] = {}
