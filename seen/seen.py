@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 import datetime
-from typing import Union, Literal
+from typing import Optional, Union, Literal
 
 import discord
 import time
@@ -118,6 +118,59 @@ class Seen(commands.Cog):
         avatar = author.display_avatar
         em.set_author(name="{} was seen {}".format(author.display_name, ts), icon_url=avatar)
         await ctx.send(embed=em)
+
+    @commands.guild_only()
+    @commands.command(name="gravekeeper")
+    @commands.bot_has_permissions(embed_links=True)
+    async def _gravekeeper(self, ctx, limit: str = None):
+        """Shows a list of users that have not been seen for more than <limit>."""
+        author = ctx.message.author
+        guild = author.guild
+        # check parameters:
+        if limit is None:
+            return await ctx.send("Please set a valid limit. (Examples: 15m = 15 Minutes. Available Units: s = seconds, m = minutes, h = hours, d = days)")
+        # validate limit:
+        unit = limit[-1]
+        if unit not in ['s', 'm', 'h', 'd']:
+            return await ctx.send("Please set a valid limit. (Examples: 15m = 15 Minutes. Available Units: s = seconds, m = minutes, h = hours, d = days)")
+        # get all users from cache:
+        users_config = await self.config.all_members(ctx.guild)
+        # loop members, and calculate if they have been inactive for more than "limit"
+        userlist = ""
+        for user_id in users_config:
+            # if so, add them to the embed:
+            user = (ctx.message.guild.get_member(user_id))
+            if user is None:
+                continue
+
+            #get seen:
+            member_seen = await self.config.member(user).seen()
+            now = int(time.time())
+            time_elapsed = int(now - member_seen)
+            output = self._dynamic_time(time_elapsed)
+
+            if output[2] < 1:
+                ts = "0"
+            else:
+                ts = ""
+                if output[0] == 1:
+                    ts += "{} day, ".format(output[0])
+                elif output[0] > 1:
+                    ts += "{} days, ".format(output[0])
+                if output[1] == 1:
+                    ts += "{} hour, ".format(output[1])
+                elif output[1] > 1:
+                    ts += "{} hours, ".format(output[1])
+                if output[2] == 1:
+                    ts += "{} minute ago".format(output[2])
+                elif output[2] > 1:
+                    ts += "{} minutes ago".format(output[2])
+            #userlist = (userlist + ts + " -----> " + user.name + "\n")
+            await ctx.send(ts + " -----> " + user.name + "\n")
+        # build the embed:
+        #embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
+        #embed.add_field(name='userlist', value=userlist)
+        #await ctx.send(embed=embed)
 
     @staticmethod
     def _dynamic_time(time_elapsed):
