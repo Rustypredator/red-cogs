@@ -120,10 +120,10 @@ class Seen(commands.Cog):
         await ctx.send(embed=em)
 
     @commands.guild_only()
-    @commands.command(name="gravekeeper")
+    @commands.command(name="graveyard")
     @commands.bot_has_permissions(embed_links=True)
-    async def _gravekeeper(self, ctx, limit: str = None):
-        """Shows a list of users that have not been seen for more than <limit>."""
+    async def _graveyard(self, ctx, limit: str = None):
+        """Shows a list of users that have not been seen for more than <limit><unit>."""
         author = ctx.message.author
         guild = author.guild
         # check parameters:
@@ -131,57 +131,82 @@ class Seen(commands.Cog):
             return await ctx.send("Please set a valid limit. (Examples: 15m = 15 Minutes. Available Units: s = seconds, m = minutes, h = hours, d = days)")
         # validate limit:
         unit = limit[-1]
+        limit = int(limit[:-1])
         if unit not in ['s', 'm', 'h', 'd']:
             return await ctx.send("Please set a valid limit. (Examples: 15m = 15 Minutes. Available Units: s = seconds, m = minutes, h = hours, d = days)")
+        # variables:
+        embed_title = "A list of users that have not been active for more than " + str(limit) + str(unit)
         # get all users from cache:
         users_config = await self.config.all_members(ctx.guild)
+        # calculate low timestamp:
+        now = int(time.time())
+        seconds = 0
+        if unit == "s":
+            seconds = limit
+        if unit == "m":
+            seconds = limit * 60
+        if unit == "h":
+            seconds = (limit * 60 * 60)
+        if unit == "d":
+            seconds = (limit * 60 * 60 * 24)
+        low_timestamp = (now - int(seconds))
         # loop members, and calculate if they have been inactive for more than "limit"
-        userlist = "```\n"
+        userlist = {}
         for user_id in users_config:
-            # if so, add them to the embed:
+            # check user
             user = (ctx.message.guild.get_member(user_id))
             if user is None:
+                # user is broken or not in guild anymore, skip.
                 continue
-
-            #get seen:
+            #get timestamp:
             member_seen = await self.config.member(user).seen()
-            now = int(time.time())
+            # check against limit:
+            if member_seen > low_timestamp:
+                # User has been active later than the limit set, skip.
+                continue
+            # create pretty timestamp
             time_elapsed = int(now - member_seen)
             output = self._dynamic_time(time_elapsed)
-
             if output[2] < 1:
-                ts = "0"
+                pretty_timestamp = "0"
             else:
-                ts = ""
+                pretty_timestamp = ""
                 if output[0] == 1:
-                    ts += "{} day, ".format(output[0])
+                    pretty_timestamp += "{} day, ".format(output[0])
                 elif output[0] > 1:
-                    ts += "{} days, ".format(output[0])
+                    pretty_timestamp += "{} days, ".format(output[0])
                 if output[1] == 1:
-                    ts += "{} hour, ".format(output[1])
+                    pretty_timestamp += "{} hour, ".format(output[1])
                 elif output[1] > 1:
-                    ts += "{} hours, ".format(output[1])
+                    pretty_timestamp += "{} hours, ".format(output[1])
                 if output[2] == 1:
-                    ts += "{} minute ago".format(output[2])
+                    pretty_timestamp += "{} minute ago".format(output[2])
                 elif output[2] > 1:
-                    ts += "{} minutes ago".format(output[2])
-            row = user.name + " -----> " + ts + "\n"
-            if (len(userlist) + len(row)) >= 1024:
+                    pretty_timestamp += "{} minutes ago".format(output[2])
+            # put everything in an dict, and append it to the list:
+            user_array = {"user_id": user_id, "pretty_time": pretty_timestamp}
+            userlist[member_seen] = user_array
+        output = "```\n"
+        for timestamp in userlist:
+            data = userlist[timestamp]
+            user = ctx.message.guild.get_member(data["user_id"])
+            row = str(timestamp) + " -----> " + str(user.name) + "\n"
+            if (len(output) + len(row)) >= 1024:
                 #finish this one first, and then start a new one.
-                userlist = userlist + "\n```"
+                output = output + "\n```"
                 # build the embed:
-                embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
-                embed.add_field(name='userlist', value=userlist)
+                embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
+                embed.add_field(name='userlist', value=output)
                 await ctx.send(embed=embed)
-                #start a new userlist:
-                userlist = "```\n"
-            #add to current userlist:
-            userlist = userlist + row
-        # finish userlist
-        userlist = userlist + "\n```"
+                #start a new output:
+                output = "```\n"
+            #add to current output:
+            output = output + row
+        # finish output
+        output = output + "\n```"
         # build the embed:
-        embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
-        embed.add_field(name='userlist', value=userlist)
+        embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
+        embed.add_field(name='userlist', value=output)
         await ctx.send(embed=embed)
 
     @staticmethod
