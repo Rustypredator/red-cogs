@@ -121,7 +121,6 @@ class Seen(commands.Cog):
 
     @commands.guild_only()
     @commands.command(name="graveyard")
-    @commands.bot_has_permissions(embed_links=True)
     async def _graveyard(self, ctx, limit: str = None):
         """Shows a list of users that have not been seen for more than <limit><unit>."""
         author = ctx.message.author
@@ -186,24 +185,26 @@ class Seen(commands.Cog):
             # put everything in an dict, and append it to the list:
             user_array = {"user_id": user_id, "pretty_time": pretty_timestamp}
             userlist[member_seen] = user_array
-        output = "```\n"
+        output_header = "+-----------------------------------+-----------------------+\n|     Time of last Activity         |        Username       |\n+-----------------------------------+-----------------------+\n"
+        output_footer = "+-----------------------------------+-----------------------+"
+        output = "```\n" + output_header
         for timestamp in userlist:
             data = userlist[timestamp]
             user = ctx.message.guild.get_member(data["user_id"])
-            row = str(timestamp) + " -----> " + str(user.name) + "\n"
+            row = "|" + (str(data["pretty_time"])).ljust(35) + "|" + str(user.name).ljust(23) + "|\n"
             if (len(output) + len(row)) >= 1024:
                 #finish this one first, and then start a new one.
-                output = output + "\n```"
+                output = output + output_footer + "\n```"
                 # build the embed:
                 embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
                 embed.add_field(name='userlist', value=output)
                 await ctx.send(embed=embed)
                 #start a new output:
-                output = "```\n"
+                output = "```\n" + output_header
             #add to current output:
             output = output + row
         # finish output
-        output = output + "\n```"
+        output = output + output_footer + "\n```"
         # build the embed:
         embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
         embed.add_field(name='userlist', value=output)
