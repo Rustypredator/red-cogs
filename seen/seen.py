@@ -136,7 +136,7 @@ class Seen(commands.Cog):
         # get all users from cache:
         users_config = await self.config.all_members(ctx.guild)
         # loop members, and calculate if they have been inactive for more than "limit"
-        userlist = ""
+        userlist = "```\n"
         for user_id in users_config:
             # if so, add them to the embed:
             user = (ctx.message.guild.get_member(user_id))
@@ -165,12 +165,24 @@ class Seen(commands.Cog):
                     ts += "{} minute ago".format(output[2])
                 elif output[2] > 1:
                     ts += "{} minutes ago".format(output[2])
-            #userlist = (userlist + ts + " -----> " + user.name + "\n")
-            await ctx.send(ts + " -----> " + user.name + "\n")
+            row = user.name + " -----> " + ts + "\n"
+            if (len(userlist) + len(row)) >= 1024:
+                #finish this one first, and then start a new one.
+                userlist = userlist + "\n```"
+                # build the embed:
+                embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
+                embed.add_field(name='userlist', value=userlist)
+                await ctx.send(embed=embed)
+                #start a new userlist:
+                userlist = "```\n"
+            #add to current userlist:
+            userlist = userlist + row
+        # finish userlist
+        userlist = userlist + "\n```"
         # build the embed:
-        #embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
-        #embed.add_field(name='userlist', value=userlist)
-        #await ctx.send(embed=embed)
+        embed = discord.Embed(colour=discord.Color.green(), title=("A list of users that have not been active for more than " + limit))
+        embed.add_field(name='userlist', value=userlist)
+        await ctx.send(embed=embed)
 
     @staticmethod
     def _dynamic_time(time_elapsed):
