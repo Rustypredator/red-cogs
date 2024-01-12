@@ -170,18 +170,9 @@ class Seen(commands.Cog):
                 pretty_timestamp = "0"
             else:
                 pretty_timestamp = ""
-                if output[0] == 1:
-                    pretty_timestamp += "{} day, ".format(output[0])
-                elif output[0] > 1:
-                    pretty_timestamp += "{} days, ".format(output[0])
-                if output[1] == 1:
-                    pretty_timestamp += "{} hour, ".format(output[1])
-                elif output[1] > 1:
-                    pretty_timestamp += "{} hours, ".format(output[1])
-                if output[2] == 1:
-                    pretty_timestamp += "{} minute ago".format(output[2])
-                elif output[2] > 1:
-                    pretty_timestamp += "{} minutes ago".format(output[2])
+                pretty_timestamp += "D: {}, ".format(str(output[0]).ljust(4))
+                pretty_timestamp += "H: {}, ".format(str(output[1]).ljust(2))
+                pretty_timestamp += "M: {} ago".format(str(output[2]).ljust(2))
             # put everything in an dict, and append it to the list:
             user_array = {"user_id": user_id, "pretty_time": pretty_timestamp}
             userlist[member_seen] = user_array
