@@ -192,13 +192,10 @@ class Seen(commands.Cog):
             data = userlist[timestamp]
             user = ctx.message.guild.get_member(data["user_id"])
             row = "|" + (str(data["pretty_time"])).ljust(35) + "|" + str(user.name).ljust(23) + "|\n"
-            if (len(output) + len(row)) >= 1024:
+            if (len(output) + (len(row)+len(output_footer))) >= 1024:
                 #finish this one first, and then start a new one.
                 output = output + output_footer + "\n```"
-                # build the embed:
-                embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
-                embed.add_field(name='userlist', value=output)
-                await ctx.send(embed=embed)
+                await ctx.send(output)
                 #start a new output:
                 output = "```\n" + output_header
             #add to current output:
