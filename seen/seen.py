@@ -170,8 +170,8 @@ class Seen(commands.Cog):
                 pretty_timestamp = "0"
             else:
                 pretty_timestamp = ""
-                pretty_timestamp += "D: {}, ".format(str(output[0]).ljust(4))
-                pretty_timestamp += "H: {}, ".format(str(output[1]).ljust(2))
+                pretty_timestamp += "D: {} ".format(str(output[0]).ljust(4))
+                pretty_timestamp += "H: {} ".format(str(output[1]).ljust(2))
                 pretty_timestamp += "M: {} ago".format(str(output[2]).ljust(2))
             # put everything in an dict, and append it to the list:
             user_array = {"user_id": user_id, "pretty_time": pretty_timestamp}
