@@ -206,9 +206,9 @@ class Seen(commands.Cog):
         # finish output
         output = output + output_footer + "\n```"
         # build the embed:
-        embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
-        embed.add_field(name='userlist', value=output)
-        await ctx.send(embed=embed)
+        # embed = discord.Embed(colour=discord.Color.green(), title=embed_title)
+        # embed.add_field(name='userlist', value=output)
+        await ctx.send(output)
 
     @staticmethod
     def _dynamic_time(time_elapsed):
