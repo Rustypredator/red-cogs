@@ -57,6 +57,7 @@ class Counting(commands.Cog):
                     color = discord.Color.green()
                 case 'shamerole':
                     title = "Setting: Shamerole"
+                    unset = False
                     
                     if len(parameters) > 0:
                         role = await commands.RoleConverter().convert(ctx, parameters[0])
