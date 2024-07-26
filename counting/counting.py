@@ -121,22 +121,39 @@ class Counting(commands.Cog):
                 # get id of counting user:
                 user_id = message.author.id
                 # get correct next number:
-                correct_number = guild_config["current_number"] +1
+                try:
+                    correct_number = guild_config["current_number"] +1
+                except:
+                    correct_number = self.default_guild["current_number"]
                 # check if number is correct and if user did not count twice:
                 if next_number == correct_number and user_id != last_counter_id:
                     # update config to reflect new number:
                     await self.config.guild(message.guild).current_number.set(next_number)
                     # update config to reflect current user as last counter:
                     await self.config.guild(message.guild).last_counter_id.set(user_id)
-                    # add a reaction to the messag indicating it was recorded.
-                    await message.add_reaction(guild_config["correct_emote"])
-
                     # get current leaderboard from config:
-                    leaderboard = guild_config["leaderboard"]
-                    # update users leaderboard entry:
-                    leaderboard[str(user_id)] = leaderboard.get(str(user_id), 0) + 1
+                    try:
+                        leaderboard = guild_config["leaderboard"]
+                    except:
+                        leaderboard = self.default_guild["leaderboard"]
+                    # get users leaderboard entry:
+                    try:
+                        llbe = leaderboard.get(str(user_id))
+                        # TODO: Global Leader Board
+                    except:
+                        llbe = {
+                            'count': 0,
+                            'failcount': 0,
+                            'pb': 0,
+                            'fails': {}
+                        }
+                    llbe['count'] = llbe['count'] + 1
+                    leaderboard[str(user_id)] = llbe
                     # Write new Leaderboard to config:
                     await self.config.guild(message.guild).leaderboard.set(leaderboard)
+                    
+                    # add a reaction to the messag indicating it was recorded.
+                    await message.add_reaction(guild_config["correct_emote"])
                 else:
                     await message.add_reaction(guild_config["wrong_emote"])
 
