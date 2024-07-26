@@ -40,13 +40,20 @@ class Counting(commands.Cog):
                         channel = parameters[0]
                     else:
                         channel = ctx.channel
-                    msg = "Setting Channel... " + str(channel)
+                    await ctx.send("No Channel defined, using the channel the command was sent from.")
+                    msg = "Counting Channel set to: " + str(channel)
+                    title = "Setting Counting Channel"
+                    color = discord.Color.green()
                 case 'shamerole':
                     msg = "Setting Shamerole..." + str(parameters)
+                    title = "Setting Shamerole"
+                    color = discord.Color.red()
                 case 'fail_on_text':
                     msg = "Setting fail_on_text" + str(parameters)
+                    title = "Setting Rule: Fail on Text"
+                    color = discord.Color.red()
                     
-        await ctx.channel.send(embed=discord.Embed(title="Test", description=msg, color=discord.Color.red()))
+        await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
 
     @commands.command()
     async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
