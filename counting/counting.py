@@ -17,7 +17,8 @@ class Counting(commands.Cog):
         "last_counter_id": None,
         "fail_on_text": False,
         "ban_from_counting_after_fail": False,
-        "participate_in_global_lb": False
+        "participate_in_global_lb": False,
+        "allow_consecutive_counting": False
     }
 
     def __init__(self, bot: Red):
@@ -79,9 +80,53 @@ class Counting(commands.Cog):
                         msg = "Shamerole was set to " + (role.mention )
                     color = discord.Color.green()
                 case 'fail_on_text':
-                    title = "Setting: Rule: Fail on Text"
-                    msg = "Setting fail_on_text" + str(parameters)
-                    color = discord.Color.red()
+                    title = "Setting Rule: Fail on Text"
+                    
+                    failOnText = False
+                    
+                    if len(parameters) > 0:
+                        failOnText = bool(parameters[0])
+                    
+                    await self.config.guild(guild).fail_on_text.set(failOnText)
+                                        
+                    msg = "Setting fail_on_text to: " + str(failOnText)
+                    color = discord.Color.green()
+                case 'ban_from_counting_after_fail':
+                    title = "Setting Rule: Ban from counting after fail"
+                    
+                    banFromCountingAfterFail = False
+                    
+                    if len(parameters) > 0:
+                        banFromCountingAfterFail = bool(parameters[0])
+                    
+                    await self.config.guild(guild).ban_from_counting_after_fail.set(banFromCountingAfterFail)
+                                        
+                    msg = "Setting ban_from_counting_after_fail to: " + str(banFromCountingAfterFail)
+                    color = discord.Color.green()
+                case 'allow_consecutive_counting':
+                    title = "Setting Rule: Ban from counting after fail"
+                    
+                    allowConsecutiveCounting = False
+                    
+                    if len(parameters) > 0:
+                        allowConsecutiveCounting = bool(parameters[0])
+                    
+                    await self.config.guild(guild).allow_consecutive_counting.set(allowConsecutiveCounting)
+                                        
+                    msg = "Setting allow_consecutive_counting to: " + str(allowConsecutiveCounting)
+                    color = discord.Color.green()
+                case 'participate_in_global_lb':
+                    title = "Setting Rule: Ban from counting after fail"
+                    
+                    participateInGlobalLb = False
+                    
+                    if len(parameters) > 0:
+                        participateInGlobalLb = bool(parameters[0])
+                    
+                    await self.config.guild(guild).participate_in_global_lb.set(participateInGlobalLb)
+                                        
+                    msg = "Setting participate_in_global_lb to: " + str(participateInGlobalLb)
+                    color = discord.Color.green()
                     
         await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
 
@@ -117,16 +162,24 @@ class Counting(commands.Cog):
                 # get proposed next number:
                 next_number = int(message.content)
                 # get id of last user to count:
-                last_counter_id = await self.config.guild(message.guild).last_counter_id()
+                last_counter_id = guild_config['last_counter_id']
                 # get id of counting user:
                 user_id = message.author.id
                 # get correct next number:
                 try:
-                    correct_number = guild_config["current_number"] +1
+                    correct_number = guild_config["current_number"] + 1
                 except:
-                    correct_number = self.default_guild["current_number"]
+                    correct_number = self.default_guild["current_number"] + 1
                 # check if number is correct and if user did not count twice:
-                if next_number == correct_number and user_id != last_counter_id:
+                # if consecutive counting is forbidden, check this:
+                if guild_config['allow_consecutive_counting']:
+                    if user_id != last_counter_id:
+                        title = "Shame! Shame!"
+                        msg = "You tried to count twice in a row."
+                        color = discord.Color.red()
+                        await message.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
+                        return
+                if next_number == correct_number:
                     # update config to reflect new number:
                     await self.config.guild(message.guild).current_number.set(next_number)
                     # update config to reflect current user as last counter:
@@ -145,6 +198,7 @@ class Counting(commands.Cog):
                             'count': 0,
                             'failcount': 0,
                             'pb': 0,
+                            'warnings': {},
                             'fails': {}
                         }
                     llbe['count'] = llbe['count'] + 1
