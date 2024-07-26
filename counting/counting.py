@@ -2,7 +2,6 @@ import random
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
-import helper
 import discord
 
 class Counting(commands.Cog):
