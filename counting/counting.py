@@ -44,7 +44,10 @@ class Counting(commands.Cog):
                     title = "Setting: Channel"
                     
                     if len(parameters) > 0:
-                        channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
+                        try:
+                            channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
+                        except BadArgument:
+                            await ctx.send("Mentioned channel was not found.")
                     else:
                         channel = ctx.channel
                         await ctx.send("No Channel defined, using the channel the command was sent from.")
@@ -80,28 +83,6 @@ class Counting(commands.Cog):
                     color = discord.Color.red()
                     
         await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
-
-    @commands.command()
-    async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
-        """Sets the channel for the counting game. If no channel is provided, a new one is created."""
-        guild = ctx.guild
-
-        if channel is None:
-            channel = await guild.create_text_channel(name="counting-game")
-            await ctx.send(f"Counting game channel created: {channel.mention}. Please set the shame role (optional) using `countingsetshamerole`.")
-        else:
-            await ctx.send(f"Counting game channel set to {channel.mention}. Please set the shame role (optional) using `countingsetshamerole`.")
-
-        await self.config.guild(ctx.guild).channel_id.set(channel.id)
-        await self.config.guild(ctx.guild).current_number.set(1)
-        await self.config.guild(ctx.guild).leaderboard.set({})
-        await self.config.guild(ctx.guild).last_counter_id.set(None)
-
-    @commands.command()
-    async def countingsetshamerole(self, ctx, shame_role: discord.Role):
-        """Sets the shame role for incorrect counting (optional)."""
-        await self.config.guild(ctx.guild).shame_role.set(shame_role.id)
-        await ctx.send(f"Shame role for counting set to {shame_role.mention}")
 
     @commands.command()
     async def currentnumber(self, ctx):
