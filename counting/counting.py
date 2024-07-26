@@ -27,6 +27,12 @@ class Counting(commands.Cog):
         self.config = Config.get_conf(self, identifier=19516548596, force_registration=True)
         self.config.register_guild(**self.default_guild)
 
+    @staticmethod
+    def strToBool(str):
+        trueKeywords = ['true', '1', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
+        return str.lower() in trueKeywords
+
+    @commands.guild_only()
     @commands.command()
     async def countingset(self, ctx, setting = None, *parameters):
         """Aggregator Command for configuring all settings of the bot"""
@@ -86,7 +92,7 @@ class Counting(commands.Cog):
                     failOnText = False
                     
                     if len(parameters) > 0:
-                        failOnText = helper.strToBool(parameters[0])
+                        failOnText = self.strToBool(parameters[0])
                     
                     await self.config.guild(guild).fail_on_text.set(failOnText)
                                         
