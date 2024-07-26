@@ -42,7 +42,7 @@ class Counting(commands.Cog):
             match setting:
                 case 'channel':
                     if len(parameters) > 0:
-                        channel = parameters[0]
+                        channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
                     else:
                         channel = ctx.channel
                         await ctx.send("No Channel defined, using the channel the command was sent from.")
