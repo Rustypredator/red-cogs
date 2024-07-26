@@ -29,28 +29,36 @@ class Counting(commands.Cog):
     async def countingset(self, ctx, setting = None, *parameters):
         """Aggregator Command for configuring all settings of the bot"""
         guild = ctx.guild
+        guildcfg = self.config.guild(guild).all()
         
         if setting == None:
             # Print all options:
-            msg = "No Setting Provided. You have the following Options:\n- channel\n- shamerole\n- fail_on_text"
+            title = "No Setting Provided."
+            msg = "You have the following Options:\n- channel\n- shamerole\n- fail_on_text"
+            color = discord.Color.red()
         else:
             match setting:
                 case 'channel':
                     if len(parameters) > 0:
-                        channel = parameters[0]
+                        channel = await discord.ext.commands.TextChannelConverter(parameters[0])
                     else:
                         channel = ctx.channel
-                    await ctx.send("No Channel defined, using the channel the command was sent from.")
-                    msg = "Counting Channel set to: " + str(channel)
-                    title = "Setting Counting Channel"
+                        await ctx.send("No Channel defined, using the channel the command was sent from.")
+                    # Set the Channel:
+                    await self.config.guild(guild).channel_id.set(channel.id)
+                    await self.config.guild(guild).current_number.set(self.default_guild["current_number"])
+                    await self.config.guild(guild).leaderboard.set(self.default_guild["leaderboard"])
+                    await self.config.guild(guild).last_counter_id.set(self.default_guild["last_counter_id"])
+                    title = "Setting: Channel"
+                    msg = "Counting Channel set to: " + str(channel.mention)
                     color = discord.Color.green()
                 case 'shamerole':
+                    title = "Setting: Shamerole"
                     msg = "Setting Shamerole..." + str(parameters)
-                    title = "Setting Shamerole"
                     color = discord.Color.red()
                 case 'fail_on_text':
+                    title = "Setting: Rule: Fail on Text"
                     msg = "Setting fail_on_text" + str(parameters)
-                    title = "Setting Rule: Fail on Text"
                     color = discord.Color.red()
                     
         await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
