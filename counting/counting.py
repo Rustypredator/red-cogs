@@ -129,9 +129,9 @@ class Counting(commands.Cog):
                 title = "No Setting or unknown Provided."
                 msg = "You have the following Options (Current Values displayed after the name):\n\n"
                 # add options and their values:
-                channel = await commands.TextChannelConverter().convert(ctx, guildcfg['channel_id'])
+                channel = await commands.TextChannelConverter().convert(ctx, self.config.guild(guild).channel_id.get())
                 msg += "- channel (" + channel.mention + ")\n"
-                role = await commands.RoleConverter().convert(ctx, guildcfg['shame_role'])
+                role = await commands.RoleConverter().convert(ctx, self.config.guild(guild).shame_role.get())
                 msg += "- shamerole (" + role.mention + ")\n"
                 msg += "- fail_on_text (" + guildcfg['fail_on_text'] + ")\n"
                 msg += "- ban_from_counting_after_fail (" + guildcfg['ban_from_counting_after_fail'] + ")\n"
