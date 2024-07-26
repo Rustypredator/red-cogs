@@ -41,6 +41,8 @@ class Counting(commands.Cog):
         else:
             match setting:
                 case 'channel':
+                    title = "Setting: Channel"
+                    
                     if len(parameters) > 0:
                         channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
                     else:
@@ -49,16 +51,28 @@ class Counting(commands.Cog):
                     # TODO: check if channel exists
                     # Set the Channel:
                     await self.config.guild(guild).channel_id.set(channel.id)
-                    await self.config.guild(guild).current_number.set(self.default_guild["current_number"])
-                    await self.config.guild(guild).leaderboard.set(self.default_guild["leaderboard"])
-                    await self.config.guild(guild).last_counter_id.set(self.default_guild["last_counter_id"])
-                    title = "Setting: Channel"
+                    
+                    # Prepare message
                     msg = "Counting Channel set to: " + str(channel.mention)
                     color = discord.Color.green()
                 case 'shamerole':
                     title = "Setting: Shamerole"
-                    msg = "Setting Shamerole..." + str(parameters)
-                    color = discord.Color.red()
+                    
+                    if len(parameters) > 0:
+                        role = await commands.RoleConverter().convert(ctx, parameters[0])
+                        await self.config.guild(guild).shame_role.set(role.id)
+                    else:
+                        unset = True
+                        await self.config.guild(guild).shame_role.set(None)
+                        await ctx.send("No Role defined. Removing Shame Role.")
+                    
+                    
+                    # Prepare Message
+                    if unset:
+                        msg = "Shamerole was removed."
+                    else:
+                        msg = "Shamerole was set to " + (role.mention )
+                    color = discord.Color.green()
                 case 'fail_on_text':
                     title = "Setting: Rule: Fail on Text"
                     msg = "Setting fail_on_text" + str(parameters)
