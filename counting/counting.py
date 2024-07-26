@@ -31,7 +31,7 @@ class Counting(commands.Cog):
         guild = ctx.guild
         
         msg = "setting " + str(setting) + " with params " + str(parameters)
-        await ctx.channel.send(embed=discord.Embed(description="Test", content=msg, color=discord.Color.red()))
+        await ctx.channel.send(embed=discord.Embed(title="Test", description=msg, color=discord.Color.red()))
 
     @commands.command()
     async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
