@@ -26,11 +26,22 @@ class Counting(commands.Cog):
         self.config.register_guild(**self.default_guild)
 
     @commands.command()
-    async def countingset(self, ctx, setting, *parameters):
+    async def countingset(self, ctx, setting = None, *parameters):
         """Aggregator Command for configuring all settings of the bot"""
         guild = ctx.guild
         
-        msg = "setting " + str(setting) + " with params " + str(parameters)
+        if setting == None:
+            # Print all options:
+            msg = "No Setting Provided. You have the following Options:\n- channel\n- shamerole\n- fail_on_text"
+        else:
+            match setting:
+                case 'channel':
+                    msg = "Setting Channel..." + str(parameters)
+                case 'shamerole':
+                    msg = "Setting Shamerole..." + str(parameters)
+                case 'fail_on_text':
+                    msg = "Setting fail_on_text" + str(parameters)
+                    
         await ctx.channel.send(embed=discord.Embed(title="Test", description=msg, color=discord.Color.red()))
 
     @commands.command()
