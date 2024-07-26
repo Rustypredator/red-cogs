@@ -44,6 +44,26 @@ class Counting(commands.Cog):
         await self.config.guild(ctx.guild).shame_role.set(shame_role.id)
         await ctx.send(f"Shame role for counting set to {shame_role.mention}")
 
+    @commands.command()
+    async def currentnumber(self, ctx):
+        """Displays the current number in the counting game."""
+        current_number = await self.config.guild(ctx.guild).current_number()
+        await ctx.send(f"The current number is: {current_number}")
+
+    @commands.command(aliases=["countingboard", "countingleaderboard"])
+    async def countinglb(self, ctx):
+        """Displays the leaderboard in an embed."""
+        leaderboard = await self.config.guild(ctx.guild).leaderboard()
+        if leaderboard:
+            sorted_leaderboard = sorted(leaderboard.items(), key=lambda item: item[1], reverse=True)
+            embed = discord.Embed(title="Counting Game Leaderboard", color=discord.Color.blue())
+            for user_id, score in sorted_leaderboard[:10]:  # Show top 10
+                user = self.bot.get_user(int(user_id))
+                embed.add_field(name=user.name, value=score, inline=False)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("The leaderboard is empty.")
+            
     @commands.Cog.listener()
     async def on_message(self, message):
         """Handles messages in the counting game channel."""
@@ -88,23 +108,3 @@ class Counting(commands.Cog):
 
             except ValueError:
                 pass  # Ignore non-numeric messages
-
-    @commands.command()
-    async def currentnumber(self, ctx):
-        """Displays the current number in the counting game."""
-        current_number = await self.config.guild(ctx.guild).current_number()
-        await ctx.send(f"The current number is: {current_number}")
-
-    @commands.command(aliases=["countingboard", "countingleaderboard"])
-    async def countinglb(self, ctx):
-        """Displays the leaderboard in an embed."""
-        leaderboard = await self.config.guild(ctx.guild).leaderboard()
-        if leaderboard:
-            sorted_leaderboard = sorted(leaderboard.items(), key=lambda item: item[1], reverse=True)
-            embed = discord.Embed(title="Counting Game Leaderboard", color=discord.Color.blue())
-            for user_id, score in sorted_leaderboard[:10]:  # Show top 10
-                user = self.bot.get_user(int(user_id))
-                embed.add_field(name=user.name, value=score, inline=False)
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send("The leaderboard is empty.")
