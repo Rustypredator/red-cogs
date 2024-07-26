@@ -94,7 +94,7 @@ class Counting(commands.Cog):
                         failOnText = self.strToBool(parameters[0])
                     
                     await self.config.guild(guild).fail_on_text.set(failOnText)
-                                        
+                    
                     msg = "Setting fail_on_text to: " + str(failOnText)
                     color = discord.Color.green()
                 case 'ban_from_counting_after_fail':
@@ -103,7 +103,7 @@ class Counting(commands.Cog):
                     banFromCountingAfterFail = False
                     
                     if len(parameters) > 0:
-                        banFromCountingAfterFail = bool(parameters[0])
+                        banFromCountingAfterFail = self.strToBool(parameters[0])
                     
                     await self.config.guild(guild).ban_from_counting_after_fail.set(banFromCountingAfterFail)
                                         
@@ -115,7 +115,7 @@ class Counting(commands.Cog):
                     allowConsecutiveCounting = False
                     
                     if len(parameters) > 0:
-                        allowConsecutiveCounting = bool(parameters[0])
+                        allowConsecutiveCounting = self.strToBool(parameters[0])
                     
                     await self.config.guild(guild).allow_consecutive_counting.set(allowConsecutiveCounting)
                                         
@@ -127,7 +127,7 @@ class Counting(commands.Cog):
                     participateInGlobalLb = False
                     
                     if len(parameters) > 0:
-                        participateInGlobalLb = bool(parameters[0])
+                        participateInGlobalLb = self.strToBool(parameters[0])
                     
                     await self.config.guild(guild).participate_in_global_lb.set(participateInGlobalLb)
                                         
