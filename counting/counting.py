@@ -30,8 +30,10 @@ class Counting(commands.Cog):
         """Aggregator Command for configuring all settings of the bot"""
         guild = ctx.guild
         guildcfg = self.config.guild(guild).all()
+        # available settings:
+        availSettings = {'channel', 'shamerole', 'fail_on_text'}
         
-        if setting == None:
+        if setting == None or setting not in availSettings:
             # Print all options:
             title = "No Setting Provided."
             msg = "You have the following Options:\n- channel\n- shamerole\n- fail_on_text"
@@ -40,10 +42,11 @@ class Counting(commands.Cog):
             match setting:
                 case 'channel':
                     if len(parameters) > 0:
-                        channel = await discord.ext.commands.TextChannelConverter(parameters[0])
+                        channel = parameters[0]
                     else:
                         channel = ctx.channel
                         await ctx.send("No Channel defined, using the channel the command was sent from.")
+                    # TODO: check if channel exists
                     # Set the Channel:
                     await self.config.guild(guild).channel_id.set(channel.id)
                     await self.config.guild(guild).current_number.set(self.default_guild["current_number"])
