@@ -30,7 +30,8 @@ class Counting(commands.Cog):
         """Aggregator Command for configuring all settings of the bot"""
         guild = ctx.guild
         
-        ctx.send("setting " + str(setting) + " with params " + str(parameters))
+        msg = "setting " + str(setting) + " with params " + str(parameters)
+        await ctx.channel.send(embed=discord.Embed(description="Test", content=msg, color=discord.Color.red()))
 
     @commands.command()
     async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
