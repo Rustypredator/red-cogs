@@ -24,11 +24,6 @@ class Counting(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=19516548596, force_registration=True)
         self.config.register_guild(**self.default_guild)
-        # update config if there are new options added:
-        # Loop "default_guild" and set any unset values to their default value:
-        for key, value in self.default_guild.items():
-            if key not in self.config:
-                self.config[key] = value
 
     @commands.command()
     async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
