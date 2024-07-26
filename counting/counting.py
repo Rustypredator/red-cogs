@@ -36,7 +36,7 @@ class Counting(commands.Cog):
         else:
             match setting:
                 case 'channel':
-                    if parameters[0] != None:
+                    if len(parameters) > 0:
                         channel = parameters[0]
                     else:
                         channel = ctx.channel
