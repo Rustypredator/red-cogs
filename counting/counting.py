@@ -26,6 +26,13 @@ class Counting(commands.Cog):
         self.config.register_guild(**self.default_guild)
 
     @commands.command()
+    async def countingset(self, ctx, setting, *parameters):
+        """Aggregator Command for configuring all settings of the bot"""
+        guild = ctx.guild
+        
+        ctx.send("setting " + str(setting) + " with params " + str(parameters))
+
+    @commands.command()
     async def countingsetchannel(self, ctx, channel: discord.TextChannel = None):
         """Sets the channel for the counting game. If no channel is provided, a new one is created."""
         guild = ctx.guild
