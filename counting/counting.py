@@ -36,7 +36,11 @@ class Counting(commands.Cog):
         else:
             match setting:
                 case 'channel':
-                    msg = "Setting Channel..." + str(parameters)
+                    if parameters[0] != None:
+                        channel = parameters[0]
+                    else:
+                        channel = ctx.channel
+                    msg = "Setting Channel... " + str(channel)
                 case 'shamerole':
                     msg = "Setting Shamerole..." + str(parameters)
                 case 'fail_on_text':
