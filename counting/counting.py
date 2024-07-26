@@ -30,6 +30,12 @@ class Counting(commands.Cog):
     def strToBool(str):
         trueKeywords = ['true', '1', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
         return str.lower() in trueKeywords
+    
+    async def channelSearch(ctx, str):
+        return await commands.TextChannelConverter().convert(ctx, str)
+    
+    async def roleSearch(ctx, str):
+        return await commands.RoleConverter().convert(ctx, str)
 
     @commands.guild_only()
     @commands.command()
@@ -37,102 +43,105 @@ class Counting(commands.Cog):
         """Aggregator Command for configuring all settings of the bot"""
         guild = ctx.guild
         guildcfg = self.config.guild(guild).all()
-        # available settings:
-        availSettings = {'channel', 'shamerole', 'fail_on_text'}
         
-        if setting == None or setting not in availSettings:
-            # Print all options:
-            title = "No Setting Provided."
-            msg = "You have the following Options:\n- channel\n- shamerole\n- fail_on_text"
-            color = discord.Color.red()
-        else:
-            match setting:
-                case 'channel':
-                    title = "Setting: Channel"
-                    
-                    if len(parameters) > 0:
-                        try:
-                            channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
-                        except discord.ext.commands.errors.ChannelNotFound:
-                            await ctx.send("Mentioned channel was not found.")
-                            return
-                    else:
-                        channel = ctx.channel
-                        await ctx.send("No Channel defined, using the channel the command was sent from.")
-                    # TODO: check if channel exists
-                    # Set the Channel:
-                    await self.config.guild(guild).channel_id.set(channel.id)
-                    
-                    # Prepare message
-                    msg = "Counting Channel set to: " + str(channel.mention)
-                    color = discord.Color.green()
-                case 'shamerole':
-                    title = "Setting: Shamerole"
-                    unset = False
-                    
-                    if len(parameters) > 0:
-                        role = await commands.RoleConverter().convert(ctx, parameters[0])
-                        await self.config.guild(guild).shame_role.set(role.id)
-                    else:
-                        unset = True
-                        await self.config.guild(guild).shame_role.set(None)
-                        await ctx.send("No Role defined. Removing Shame Role.")
-                    
-                    
-                    # Prepare Message
-                    if unset:
-                        msg = "Shamerole was removed."
-                    else:
-                        msg = "Shamerole was set to " + (role.mention )
-                    color = discord.Color.green()
-                case 'fail_on_text':
-                    title = "Setting Rule: Fail on Text"
-                    
-                    failOnText = False
-                    
-                    if len(parameters) > 0:
-                        failOnText = self.strToBool(parameters[0])
-                    
-                    await self.config.guild(guild).fail_on_text.set(failOnText)
-                    
-                    msg = "Setting fail_on_text to: " + str(failOnText)
-                    color = discord.Color.green()
-                case 'ban_from_counting_after_fail':
-                    title = "Setting Rule: Ban from counting after fail"
-                    
-                    banFromCountingAfterFail = False
-                    
-                    if len(parameters) > 0:
-                        banFromCountingAfterFail = self.strToBool(parameters[0])
-                    
-                    await self.config.guild(guild).ban_from_counting_after_fail.set(banFromCountingAfterFail)
-                                        
-                    msg = "Setting ban_from_counting_after_fail to: " + str(banFromCountingAfterFail)
-                    color = discord.Color.green()
-                case 'allow_consecutive_counting':
-                    title = "Setting Rule: Ban from counting after fail"
-                    
-                    allowConsecutiveCounting = False
-                    
-                    if len(parameters) > 0:
-                        allowConsecutiveCounting = self.strToBool(parameters[0])
-                    
-                    await self.config.guild(guild).allow_consecutive_counting.set(allowConsecutiveCounting)
-                                        
-                    msg = "Setting allow_consecutive_counting to: " + str(allowConsecutiveCounting)
-                    color = discord.Color.green()
-                case 'participate_in_global_lb':
-                    title = "Setting Rule: Ban from counting after fail"
-                    
-                    participateInGlobalLb = False
-                    
-                    if len(parameters) > 0:
-                        participateInGlobalLb = self.strToBool(parameters[0])
-                    
-                    await self.config.guild(guild).participate_in_global_lb.set(participateInGlobalLb)
-                                        
-                    msg = "Setting participate_in_global_lb to: " + str(participateInGlobalLb)
-                    color = discord.Color.green()
+        match setting:
+            case 'channel':
+                title = "Setting: Channel"
+                
+                if len(parameters) > 0:
+                    try:
+                        channel = await self.channelSearch(ctx, parameters[0])
+                    except discord.ext.commands.errors.ChannelNotFound:
+                        await ctx.send("Mentioned channel was not found.")
+                        return
+                else:
+                    channel = ctx.channel
+                    await ctx.send("No Channel defined, using the channel the command was sent from.")
+                # TODO: check if channel exists
+                # Set the Channel:
+                await self.config.guild(guild).channel_id.set(channel.id)
+                
+                # Prepare message
+                msg = "Counting Channel set to: " + str(channel.mention)
+                color = discord.Color.green()
+            case 'shamerole':
+                title = "Setting: Shamerole"
+                unset = False
+                
+                if len(parameters) > 0:
+                    role = await commands.RoleConverter().convert(ctx, parameters[0])
+                    await self.config.guild(guild).shame_role.set(role.id)
+                else:
+                    unset = True
+                    await self.config.guild(guild).shame_role.set(None)
+                    await ctx.send("No Role defined. Removing Shame Role.")
+                
+                
+                # Prepare Message
+                if unset:
+                    msg = "Shamerole was removed."
+                else:
+                    msg = "Shamerole was set to " + (role.mention )
+                color = discord.Color.green()
+            case 'fail_on_text':
+                title = "Setting Rule: Fail on Text"
+                
+                failOnText = False
+                
+                if len(parameters) > 0:
+                    failOnText = self.strToBool(parameters[0])
+                
+                await self.config.guild(guild).fail_on_text.set(failOnText)
+                
+                msg = "Setting fail_on_text to: " + str(failOnText)
+                color = discord.Color.green()
+            case 'ban_from_counting_after_fail':
+                title = "Setting Rule: Ban from counting after fail"
+                
+                banFromCountingAfterFail = False
+                
+                if len(parameters) > 0:
+                    banFromCountingAfterFail = self.strToBool(parameters[0])
+                
+                await self.config.guild(guild).ban_from_counting_after_fail.set(banFromCountingAfterFail)
+                                    
+                msg = "Setting ban_from_counting_after_fail to: " + str(banFromCountingAfterFail)
+                color = discord.Color.green()
+            case 'allow_consecutive_counting':
+                title = "Setting Rule: Ban from counting after fail"
+                
+                allowConsecutiveCounting = False
+                
+                if len(parameters) > 0:
+                    allowConsecutiveCounting = self.strToBool(parameters[0])
+                
+                await self.config.guild(guild).allow_consecutive_counting.set(allowConsecutiveCounting)
+                                    
+                msg = "Setting allow_consecutive_counting to: " + str(allowConsecutiveCounting)
+                color = discord.Color.green()
+            case 'participate_in_global_lb':
+                title = "Setting Rule: Ban from counting after fail"
+                
+                participateInGlobalLb = False
+                
+                if len(parameters) > 0:
+                    participateInGlobalLb = self.strToBool(parameters[0])
+                
+                await self.config.guild(guild).participate_in_global_lb.set(participateInGlobalLb)
+                                    
+                msg = "Setting participate_in_global_lb to: " + str(participateInGlobalLb)
+                color = discord.Color.green()
+            case _:
+                title = "No Setting or unknown Provided."
+                msg = "You have the following Options (Current Values displayed after the name):\n\n"
+                # add options and their values:
+                msg += "- channel (" + self.channelSearch(guildcfg['channel_id']).mention + ")\n"
+                msg += "- shamerole (" + self.roleSearch(guildcfg['shame_role']).mention + ")\n"
+                msg += "- fail_on_text (" + guildcfg['fail_on_text'] + ")\n"
+                msg += "- ban_from_counting_after_fail (" + guildcfg['ban_from_counting_after_fail'] + ")\n"
+                msg += "- allow_consecutive_counting (" + guildcfg['allow_consecutive_counting'] + ")\n"
+                msg += "- participate_in_global_lb (" + guildcfg['participate_in_global_lb'] + ")"
+                color = discord.Color.red()
                     
         await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
 
