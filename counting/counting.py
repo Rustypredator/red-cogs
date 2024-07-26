@@ -44,7 +44,7 @@ class Counting(commands.Cog):
                 
                 if len(parameters) > 0:
                     try:
-                        channel = await self.channelSearch(ctx, parameters[0])
+                        channel = await commands.TextChannelConverter().convert(ctx, parameters[0])
                     except discord.ext.commands.errors.ChannelNotFound:
                         await ctx.send("Mentioned channel was not found.")
                         return
