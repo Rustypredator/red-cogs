@@ -127,7 +127,7 @@ class Counting(commands.Cog):
                 color = discord.Color.green()
             case _:
                 title = "No Setting or unknown Provided."
-                msg = "You have the following Options (Current Values displayed after the name):\n\n"
+                msg = "Usage:\n```[p]countingset [setting] <parameters>```\n\nYou have the following Options (Current Values displayed after the name):\n"
                 # add options and their values:
                 #channel = await commands.TextChannelConverter().convert(ctx, self.config.guild(guild).channel_id)
                 msg += "- channel\n"
