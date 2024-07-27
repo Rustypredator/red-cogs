@@ -134,9 +134,9 @@ class Counting(commands.Cog):
                 #role = await commands.RoleConverter().convert(ctx, self.config.guild(guild).shame_role)
                 msg += "- shamerole ()\n"
                 msg += "- fail_on_text (" + str(self.config.guild(guild).fail_on_text) + ")\n"
-                msg += "- ban_from_counting_after_fail (" + self.config.guild(guild).ban_from_counting_after_fail + ")\n"
-                msg += "- allow_consecutive_counting (" + self.config.guild(guild).allow_consecutive_counting + ")\n"
-                msg += "- participate_in_global_lb (" + self.config.guild(guild).participate_in_global_lb + ")"
+                msg += "- ban_from_counting_after_fail (" + str(self.config.guild(guild).ban_from_counting_after_fail) + ")\n"
+                msg += "- allow_consecutive_counting (" + str(self.config.guild(guild).allow_consecutive_counting) + ")\n"
+                msg += "- participate_in_global_lb (" + str(self.config.guild(guild).participate_in_global_lb) + ")"
                 color = discord.Color.red()
                     
         await ctx.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
