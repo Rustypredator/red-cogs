@@ -133,9 +133,9 @@ class Counting(commands.Cog):
                 msg += "- channel ()\n"
                 #role = await commands.RoleConverter().convert(ctx, self.config.guild(guild).shame_role)
                 msg += "- shamerole ()\n"
-                msg += "- fail_on_text"
-                msg += "- ban_from_counting_after_fail"
-                msg += "- allow_consecutive_counting"
+                msg += "- fail_on_text\n"
+                msg += "- ban_from_counting_after_fail\n"
+                msg += "- allow_consecutive_counting\n"
                 msg += "- participate_in_global_lb"
                 color = discord.Color.red()
                     
