@@ -130,9 +130,11 @@ class Counting(commands.Cog):
                 msg = "Usage:\n```[p]countingset [setting] <parameters>```\n\nYou have the following Options (Current Values displayed after the name):\n"
                 # add options and their values:
                 #channel = await commands.TextChannelConverter().convert(ctx, self.config.guild(guild).channel_id)
-                msg += "- channel\n"
+                channel = await self.config.guild(guild).channel_id()
+                msg += "- channel (" + str(channel) + ")\n"
                 #role = await commands.RoleConverter().convert(ctx, self.config.guild(guild).shame_role)
-                msg += "- shamerole\n"
+                role = await self.config.guild(guild).shame_role()
+                msg += "- shamerole (" + str(role) + ")\n"
                 msg += "- fail_on_text\n"
                 msg += "- ban_from_counting_after_fail\n"
                 msg += "- allow_consecutive_counting\n"
@@ -185,8 +187,9 @@ class Counting(commands.Cog):
                 # if consecutive counting is forbidden, check this:
                 if guild_config['allow_consecutive_counting']:
                     if user_id != last_counter_id:
-                        title = "Shame! Shame!"
+                        title = ":bell: :bell: Shame!, Shame! :bell: :bell:"
                         msg = "You tried to count twice in a row."
+                        # TODO: warning?
                         color = discord.Color.red()
                         await message.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
                         return
