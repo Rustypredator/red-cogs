@@ -130,9 +130,9 @@ class Counting(commands.Cog):
                 msg = "You have the following Options (Current Values displayed after the name):\n\n"
                 # add options and their values:
                 #channel = await commands.TextChannelConverter().convert(ctx, self.config.guild(guild).channel_id)
-                msg += "- channel ()\n"
+                msg += "- channel\n"
                 #role = await commands.RoleConverter().convert(ctx, self.config.guild(guild).shame_role)
-                msg += "- shamerole ()\n"
+                msg += "- shamerole\n"
                 msg += "- fail_on_text\n"
                 msg += "- ban_from_counting_after_fail\n"
                 msg += "- allow_consecutive_counting\n"
