@@ -129,11 +129,11 @@ class Counting(commands.Cog):
                 title = "No Setting or unknown Provided."
                 msg = "Usage:\n```[p]countingset [setting] <parameters>```\n\nYou have the following Options (Current Values displayed after the name):\n"
                 # add options and their values:
-                channelId = await self.config.guild(guild).channel_id()
-                channel = await commands.TextChannelConverter().convert(ctx, channelId)
+                channel = await self.config.guild(guild).channel_id()
+                #channel = await commands.TextChannelConverter().convert(ctx, channelId)
                 msg += "- channel (" + str(channel.mention) + ")\n"
-                roleId = await self.config.guild(guild).shame_role()
-                role = await commands.RoleConverter().convert(ctx, roleId)
+                role = await self.config.guild(guild).shame_role()
+                #role = await commands.RoleConverter().convert(ctx, roleId)
                 msg += "- shamerole (" + str(role.mention) + ")\n"
                 msg += "- fail_on_text\n"
                 msg += "- ban_from_counting_after_fail\n"
