@@ -38,9 +38,24 @@ class Counting(commands.Cog):
         self.config.register_guild(**self.default_guild)
 
     @staticmethod
-    def strToBool(str):
+    def strToBool(convertme):
+        # check if str is actually a string:
+        if not isinstance(convertme, str):
+            # check if it is a bool:
+            if isinstance(convertme, bool):
+                # if it is a bool, return it
+                return convertme
+            if isinstance(convertme, int):
+                # if it is a int, return it
+                if convertme > 0:
+                    return True
+                else:
+                    return False
+            else:
+                # if it is neither, return False
+                return False
         trueKeywords = ['true', '1', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
-        return str.lower() in trueKeywords
+        return convertme.lower() in trueKeywords
     
     @staticmethod
     def isNumber(str):
