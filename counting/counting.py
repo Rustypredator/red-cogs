@@ -7,12 +7,23 @@ import discord
 class Counting(commands.Cog):
     """Cog for a counting game with leaderboards, custom reactions, per-guild configuration, and optional shame role."""
 
+    lang = {
+        "en": {
+            "general": {
+                "countingTwiceMsg1": "You tried to count twice in a row."
+            }
+        },
+        "de": {
+            "general": {
+                "countingTwiceMsg1": "Du hast versucht zwei mal zu zählen."
+            }
+        }
+    }
+
     default_guild = {
         "current_number": 0,
         "channel_id": None,
         "leaderboard": {},
-        "correct_emote": "✅",
-        "wrong_emote": "❌",
         "shame_role": None,
         "last_counter_id": None,
         "fail_on_text": False,
@@ -30,6 +41,68 @@ class Counting(commands.Cog):
     def strToBool(str):
         trueKeywords = ['true', '1', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
         return str.lower() in trueKeywords
+    
+    @staticmethod
+    def isNumber(str):
+        try:
+            float(str)
+        except ValueError:
+            return False
+        return True
+
+    async def failed(why, message, guildConfig, lang, banFromCountingAfterFail):
+        # Why Array:
+        # 1: Text in COunting Channel
+        # 2: Consecutive Counting
+        # 3: Wrong Number
+
+        # wether or not the counter needs to be reset...
+        reset = False
+
+        # mark message as wrong
+        await message.add_reaction("❌")
+
+        display_name = message.author.display_name
+        correct_number = guildConfig["current_number"] + 1
+
+        roasts = {
+            "en": [
+                f"{display_name} could'nt even count to {correct_number}! Maybe try using your fingers next time?",
+                f"Looks like {display_name} skipped a few math classes... Back to square one!",
+                f"{display_name}, is that your final answer? Because it's definitely wrong!",
+                f"{display_name}'s counting skills are as impressive as their ability to divide by zero.",
+                f"{display_name}, are you sure you're not a calculator in disguise? Because your math is off!"
+            ],
+            "de": [
+                f"{display_name}, Du bist der Grund, warum Taschenrechner erfunden wurden.",
+            ]
+        }
+        
+        title = ":bell: :bell: Shame!, Shame! :bell: :bell:"
+        color = discord.Color.red()
+        failmsg = "bleh"
+        
+        match why:
+            case 1:
+                failmsg = "Text is not allowed here."
+            case 2:
+                failmsg = "You cant count twice!"
+            case 3:
+                channel = message.channel
+                # roast them!
+                roast = random.choice(roasts[lang])
+                await channel.send(embed=discord.Embed(description=roast, color=discord.Color.red()))
+        
+        # send message
+        await message.channel.send(embed=discord.Embed(title=title, description=failmsg, color=color))
+        
+        # do logic to the user who failed! apply role etc.
+        if guildConfig["shame_role"]:
+            shame_role = message.guild.get_role(guildConfig["shame_role"])
+            await message.author.add_roles(shame_role, reason="Wrong count or double counting")
+        if banFromCountingAfterFail:
+            await message.channel.set_permissions(shame_role, send_messages=False)
+        return reset
 
     @commands.guild_only()
     @commands.command()
@@ -170,79 +243,80 @@ class Counting(commands.Cog):
             return
 
         guild_config = await self.config.guild(message.guild).all()
+        
         if guild_config["channel_id"] == message.channel.id:
             try:
-                # get proposed next number:
-                next_number = int(message.content)
-                # get id of last user to count:
+                # get settings:
+                failOnText = self.strToBool(guild_config['fail_on_text'])
+                banFromCountingAfterFail = self.strToBool(guild_config['ban_from_counting_after_fail'])
+                allowConsecutiveCounting = self.strToBool(guild_config['allow_consecutive_counting'])
+                #participateInGlobalLb = self.strToBool(guild_config['participate_in_global_lb'])
+                
+                # get current Stats
+                last_number = int(guild_config['current_number'])
+                correct_number = last_number + 1
                 last_counter_id = guild_config['last_counter_id']
-                # get id of counting user:
+                
+                # get vars for message:
+                next_number = int(message.content)
                 user_id = message.author.id
-                # get correct next number:
-                try:
-                    correct_number = guild_config["current_number"] + 1
-                except:
-                    correct_number = self.default_guild["current_number"] + 1
-                # check if number is correct and if user did not count twice:
-                # if consecutive counting is forbidden, check this:
-                if guild_config['allow_consecutive_counting']:
-                    if user_id != last_counter_id:
-                        title = ":bell: :bell: Shame!, Shame! :bell: :bell:"
-                        msg = "You tried to count twice in a row."
-                        # TODO: warning?
-                        color = discord.Color.red()
-                        await message.channel.send(embed=discord.Embed(title=title, description=msg, color=color))
+                
+                # if fail on text is on, check it first!
+                if failOnText:
+                    if not self.isNumber(message.content):
+                        reset = await self.failed(1, message, banFromCountingAfterFail)
+                        if reset:
+                            # reset counter
+                            await self.config.guild(message.guild).current_number.set(1)
+                            await self.config.guild(message.guild).last_counter_id.set(None)
                         return
-                if next_number == correct_number:
-                    # update config to reflect new number:
-                    await self.config.guild(message.guild).current_number.set(next_number)
-                    # update config to reflect current user as last counter:
-                    await self.config.guild(message.guild).last_counter_id.set(user_id)
-                    # get current leaderboard from config:
-                    try:
-                        leaderboard = guild_config["leaderboard"]
-                    except:
-                        leaderboard = self.default_guild["leaderboard"]
-                    # get users leaderboard entry:
-                    try:
-                        llbe = leaderboard.get(str(user_id))
-                        # TODO: Global Leader Board
-                    except:
-                        llbe = {
-                            'count': 0,
-                            'failcount': 0,
-                            'pb': 0,
-                            'warnings': {},
-                            'fails': {}
-                        }
-                    llbe['count'] = llbe['count'] + 1
-                    leaderboard[str(user_id)] = llbe
-                    # Write new Leaderboard to config:
-                    await self.config.guild(message.guild).leaderboard.set(leaderboard)
+                
+                # if consecutive counting is forbidden, check this:
+                if not allowConsecutiveCounting:
+                    if user_id == last_counter_id:
+                        reset = await self.failed(2, message, banFromCountingAfterFail)
+                        if reset:
+                            # reset counter
+                            await self.config.guild(message.guild).current_number.set(1)
+                            await self.config.guild(message.guild).last_counter_id.set(None)
+                        return
                     
-                    # add a reaction to the messag indicating it was recorded.
-                    await message.add_reaction(guild_config["correct_emote"])
-                else:
-                    await message.add_reaction(guild_config["wrong_emote"])
-
-                    if guild_config["shame_role"]:
-                        shame_role = message.guild.get_role(guild_config["shame_role"])
-                        await message.author.add_roles(shame_role, reason="Wrong count or double counting")
-                        await message.channel.set_permissions(shame_role, send_messages=False)
-
-                        display_name = message.author.display_name
-                        roasts = [
-                            f"{display_name} couldn't even count to {guild_config['current_number'] + 1}! Maybe try using your fingers next time?",
-                            f"Looks like {display_name} skipped a few math classes... Back to square one!",
-                            f"{display_name}, is that your final answer? Because it's definitely wrong!",
-                            f"{display_name}'s counting skills are as impressive as their ability to divide by zero.",
-                            f"{display_name}, are you sure you're not a calculator in disguise? Because your math is off!",
-                        ]
-                        roast = random.choice(roasts)
-                        await message.channel.send(embed=discord.Embed(description=roast, color=discord.Color.red()))
-
-                    await self.config.guild(message.guild).current_number.set(1)
-                    await self.config.guild(message.guild).last_counter_id.set(None)
-
+                # check if number is correct:
+                if next_number != correct_number:
+                    reset = await self.failed(3, message, banFromCountingAfterFail)
+                    if reset:
+                        # reset counter
+                        await self.config.guild(message.guild).current_number.set(1)
+                        await self.config.guild(message.guild).last_counter_id.set(None)
+                    return
+                    
+                # update config to reflect new number:
+                await self.config.guild(message.guild).current_number.set(next_number)
+                # update config to reflect current user as last counter:
+                await self.config.guild(message.guild).last_counter_id.set(user_id)
+                # get current leaderboard from config:
+                try:
+                    leaderboard = guild_config["leaderboard"]
+                except:
+                    leaderboard = self.default_guild["leaderboard"]
+                # get users leaderboard entry:
+                try:
+                    llbe = leaderboard.get(str(user_id))
+                    # TODO: Global Leader Board
+                except:
+                    llbe = {
+                        'count': 0,
+                        'failcount': 0,
+                        'pb': 0,
+                        'warnings': {},
+                        'fails': {}
+                    }
+                llbe['count'] = llbe['count'] + 1
+                leaderboard[str(user_id)] = llbe
+                # Write new Leaderboard to config:
+                await self.config.guild(message.guild).leaderboard.set(leaderboard)
+                
+                # add a reaction to the messag indicating it was recorded.
+                await message.add_reaction("✅")
             except ValueError:
                 pass  # Ignore non-numeric messagesuser_id = str(message.author.id)
